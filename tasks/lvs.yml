@@ -1,0 +1,49 @@
+---
+- name: 'Ensure LVM Volume Groups'
+  community.general.lvg:
+    vg: "{{ volume_group['name'] }}"
+    pvs: "{{ volume_group['pvs'] | join(',') }}"
+    pvresize: true  # Always resize to the maximum available space
+
+- name: 'Ensure Logical Volumes'
+  community.general.lvol:
+    vg: "{{ volume_group['name'] }}"
+    lv: "{{ logical_volume['name'] }}"
+    size: "{{ logical_volume['size'] | default(omit) }}"
+    opts: "{{ logical_volume['options'] | default(omit) }}"
+    state: "{{ logical_volume['state'] | default('present') }}"
+    resizefs: true
+  loop: "{{ volume_group['volumes'] }}"
+  loop_control:
+    loop_var: 'logical_volume'
+
+- name: 'Ensure mountpoint exists'
+  ansible.builtin.file:
+    path: "{{ logical_volume['mountpoint'] }}"
+    owner: "{{ logical_volume['mountpoint_owner'] | default('root') }}"
+    group: "{{ logical_volume['mountpoint_group'] | default('root') }}"
+    mode: "{{ logical_volume['mountpoint_mode'] | default('0755') }}"
+  loop: "{{ volume_group['volumes'] }}"
+  loop_control:
+    loop_var: 'logical_volume'
+
+- name: 'Ensure filesystem'
+  community.general.filesystem:
+    dev: "/dev/mapper/{{ volume_group['name'] + '-' + logical_volume['name'] }}"
+    fstype: "{{ logical_volume['fstype'] }}"
+    force: false  # Do not kill any existing data
+    state: 'present'
+  loop: "{{ volume_group['volumes'] }}"
+  loop_control:
+    loop_var: 'logical_volume'
+
+- name: 'Ensure Logical Volume mounted'
+  ansible.posix.mount:
+    src: "/dev/mapper/{{ volume_group['name'] + '-' + logical_volume['name'] }}"
+    path: "{{ logical_volume['mountpoint'] }}"
+    fstype: "{{ logical_volume['fstype'] }}"
+    opts: "{{ logical_volume['mountpoint_opts'] | default(omit) }}"
+    state: 'mounted'
+  loop: "{{ volume_group['volumes'] }}"
+  loop_control:
+    loop_var: 'logical_volume'
