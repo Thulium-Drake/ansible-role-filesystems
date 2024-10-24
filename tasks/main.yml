@@ -1,7 +1,7 @@
 ---
 - name: 'Ensure LVM Logical Volumes per Volume Group'
   ansible.builtin.include_tasks:
-    file: 'tasks/lvs.yml'
+    file: 'tasks/filesystems.yml'
   loop: "{{ filesystems }}"
   loop_control:
     loop_var: 'volume_group'

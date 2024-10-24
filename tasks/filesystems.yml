@@ -3,7 +3,8 @@
   community.general.lvg:
     vg: "{{ volume_group['name'] }}"
     pvs: "{{ volume_group['pvs'] | join(',') }}"
-    pvresize: true  # Always resize to the maximum available space
+    pvresize: true  # Always resize to the maximum available space on the partitions
+  when: volume_group['pvs'] is defined
 
 - name: 'Ensure Logical Volumes'
   community.general.lvol:

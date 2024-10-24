@@ -3,30 +3,28 @@
 # NOTE: if you want to manage / as well, the default permissions are 0555
 #
 # filesystems:
-#   rhel:                     # LVM Volume Group name
-#     pvs:                    # LVM Physical Volumes to use
+#   - name: 'rhel'                  # LVM Volume Group name
+#     pvs:                          # Optional, LVM Physical Volumes to use
 #       - '/dev/sda3'
-#     volumes:                # Volumes to create in the VG
-#       - name: 'data'
-#         mountpoint: '/data'
-#         mountpoint_owner: 'root'  # Default values
+#     volumes:                      # Volumes to create in the VG
+#       - name: 'minimal'
+#         size: '15G'
+#         fstype: 'xfs'
+#         mountpoint: '/minimal'
+#       - name: 'xmas'
+#         size: '15G'
+#         lvm_options: '-r 16'      # Optional, options for LVM creation
+#         fstype: 'ext4'
+#         mkfs_options: '-c'        # Optional, options for filesystem creation
+#         mountpoint: '/xmas'
+#         mountpoint_owner: 'root'  # Optional, Default values
 #         mountpoint_group: 'root'  #
 #         mountpoint_mode: '0755'   #
-#         mountpoint_opts: 'ro'
-#         size: '15G'
-#         options: '-r 16'
+#         mountpoint_opts: 'ro'     # Optional, options for fstab
+#         state: 'present'          # Optional, default present
 #       - name: 'deleteme'
 #         state: 'absent'
-filesystems:
-  - name: 'fedora'
-    pvs:
-      - '/dev/vda3'
-    volumes:
-      - name: 'root'
-        fstype: 'xfs'
-        mountpoint: '/'
-        mountpoint_mode: '0555'
-        size: '15G'
+filesystems: []
 
 # Allow shrinking of LVMs
 # NOTE: This is not always supported (e.g. XFS does not allow it)
